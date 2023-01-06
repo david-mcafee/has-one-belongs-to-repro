@@ -38,7 +38,7 @@ function App() {
   //   };
   // }, []);
 
-  const createSeparateDogsAndOwner = async () => {
+  const createSeparateDogsAndOwnerThenQuery = async () => {
     const dog1 = await DataStore.save(
       new CompositeDog({
         name: "Dog1",
@@ -48,11 +48,11 @@ function App() {
 
     console.log(dog1);
 
-    const dog2 = await DataStore.save(
-      new CompositeDog({ name: "Dog2", description: `${Date.now()}` })
-    );
+    // const dog2 = await DataStore.save(
+    //   new CompositeDog({ name: "Dog2", description: `${Date.now()}` })
+    // );
 
-    console.log(dog2);
+    // console.log(dog2);
 
     const owner1 = await DataStore.save(
       new CompositeOwner({
@@ -69,12 +69,12 @@ function App() {
     setCurrentOwner(owner1);
   };
 
-  const createConnectedDogAndOwner = async () => {
+  const createTwoDogsAndOneOwnerWithConnection = async () => {
     const dog1 = await DataStore.save(
       new CompositeDog({ name: "Dog1", description: `${Date.now()}` })
     );
 
-    console.log("dog1 (setting current dog)", dog1);
+    console.log("dog1)", dog1);
 
     //@ts-ignore
     setCurrentDog(dog1);
@@ -85,13 +85,64 @@ function App() {
 
     const owner1 = await DataStore.save(
       new CompositeOwner({
-        lastName: "Cooper",
+        lastName: `${Date.now()}`,
         firstName: "Dale",
         CompositeDog: dog1,
       })
     );
 
-    console.log("set current owner", owner1);
+    console.log("owner1", owner1);
+
+    // Required step:
+    const updatedCurrentDog = await DataStore.save(
+      CompositeDog.copyOf(dog1, (updated) => {
+        updated.CompositeOwner = owner1;
+      })
+    );
+
+    console.log("updatedCurrentDog", updatedCurrentDog);
+
+    //@ts-ignore
+    setCurrentOwner(owner1);
+
+    console.log("dog1", dog1);
+    console.log("dog2", dog2);
+    console.log("owner1", owner1);
+  };
+
+  const createOneDogAndOneOwnerWithConnection = async () => {
+    const dog1 = await DataStore.save(
+      new CompositeDog({ name: "Dog1", description: `${Date.now()}` })
+    );
+
+    console.log("dog1)", dog1);
+
+    //@ts-ignore
+    setCurrentDog(dog1);
+
+    const dog2 = await DataStore.save(
+      new CompositeDog({ name: "Dog2", description: `${Date.now()}` })
+    );
+
+    const owner1 = await DataStore.save(
+      new CompositeOwner({
+        lastName: `${Date.now()}`,
+        firstName: "Dale",
+        CompositeDog: dog1,
+      })
+    );
+
+    console.log("owner1", owner1);
+
+    // Required step:
+    const updatedCurrentDog = await DataStore.save(
+      CompositeDog.copyOf(dog1, (updated) => {
+        updated.CompositeOwner = owner1;
+      })
+    );
+
+    console.log("updatedCurrentDog", updatedCurrentDog);
+
     //@ts-ignore
     setCurrentOwner(owner1);
 
@@ -113,7 +164,9 @@ function App() {
     console.log("queriedOwner1", queriedOwner1);
 
     const lazyRecord = await queriedOwner1?.CompositeDog;
-    console.log("lazyRecord", lazyRecord);
+
+    // Returns as expected
+    console.log("lazyRecord should be `undefined`", lazyRecord);
   };
 
   const deleteAll = async () => {
@@ -128,15 +181,25 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <button onClick={createSeparateDogsAndOwner}>
-          createSeparateDogAndOwner
-        </button>
-        <button onClick={createConnectedDogAndOwner}>
-          createConnectedDogAndOwner
+        <h2>Case #1:</h2>
+        <button onClick={createTwoDogsAndOneOwnerWithConnection}>
+          createTwoDogsAndOneOwnerWithSingleConnection
         </button>
         <button onClick={queryDogFromCurrentOwner}>
           queryDogFromCurrentOwner
+        </button>
+        <br />
+        <h2>Case #2:</h2>
+        <button onClick={createOneDogAndOneOwnerWithConnection}>
+          createOneDogAndOneOwnerWithConnection
+        </button>
+        <button onClick={queryDogFromCurrentOwner}>
+          queryDogFromCurrentOwner
+        </button>
+        <br />
+        <h2>Case #2:</h2>
+        <button onClick={createSeparateDogsAndOwnerThenQuery}>
+          createSeparateDogAndOwner
         </button>
         <button onClick={getCompositeDogs}>getCompositeDogs</button>
         <button onClick={getCompositeOwners}>getCompositeOwners</button>
